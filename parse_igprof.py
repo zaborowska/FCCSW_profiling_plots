@@ -7,29 +7,55 @@ from ROOT import TGraphErrors, TFile
 from array import array
 
 #TODO: move to config
-filename_format = './igprof_res*' 
+filename_format = 'test/igreport_perf_E*.res' 
+# substring just needs to be contained in line for it to match
+method_list = ['sim::RunManager::processEvent(', 'G4']
 
-method__list = ['sim::RunManager::processEvent(', 'G4EventManager']
+# create result dict
+result = {}
 
-# create lists
-param = []
-time = []
-time_err = []
-hits_num = []
+# igprof strings
+ig_cumulative_string = """----------------------------------------------------------------------
+Flat profile (cumulative >= 1%)"""
+ig_flat_string = """----------------------------------------------------------------------
+Flat profile (self >= 0.01%)"""
+
 # loop over all files in directory
-for filename in glob.glob(nameDir):
-    parameter = re.findall(r"[-+]?\d*\.\d+|\d+",filename)
+for filename in glob.glob(filename_format):
+    print('Parsing file %s' % filename)
+    parameter = re.findall(r"[-+]?\d*\.\d+|\d+",filename)[0]
     if not parameter:
         print('WARNING: omitting file: '+filepath)
     else:
         ## open each file that contains energy
         with open(filename) as f:
-            ## add energy to the list
-            param.append(float(parameter))
             content = f.read()
-            # get timing information and unit
-            time.append(float(numbers[2])*un)
+            # get part between the 'cumulative' and 'flat' header
+            cumulative_part = content.split(ig_cumulative_string)[1]
+            cumulative_part = cumulative_part.split(ig_flat_string)[0]
+            all_lines = cumulative_part.split('\n')
+            relevant_lines = []
+            for method in method_list:
+                for line in all_lines:
+                    if method in line:
+                        relevant_lines.append(line)
+            for line in relevant_lines:
+                """ p.ex. ['78.9', '28.23', 'G4EventManager::DoProcessing(G4Event*)', '[33]']
+                """
+                line_parts = line.split()
+                print(line_parts)
+                
+                percent = line_parts[0]
+                total = line_parts[1],
+                method_name = ' '.join(line_parts[2:-1])
+                igprof_number = line_parts[-1]
+                # make sure the dict contains a nested list
+                result.setdefault(method_name, [[], []])[0].append(float(parameter))
+                result[method_name][1].append(float(percent))
+                #TODO: add total column as well?
 
+print(result)
+"""
     #TODO:
     # here create a graph and save to tfile
     en_arr = array('f', en)
@@ -48,3 +74,4 @@ for filename in glob.glob(nameDir):
     print(subdir+os.sep+'time.root')
     file = TFile(subdir+os.sep+'time.root','RECREATE')
     graph.Write()
+"""
