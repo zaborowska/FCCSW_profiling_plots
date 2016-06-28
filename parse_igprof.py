@@ -6,8 +6,9 @@ import glob
 from ROOT import TGraphErrors, TFile
 from array import array
 
+inname = sys.argv[1]
 #TODO: move to config
-filename_format = 'test/igreport_perf_E*.res' 
+filename_format = 'data/igprof.'+inname+'.'+'*.txt'
 # substring just needs to be contained in line for it to match
 method_list = ['sim::RunManager::processEvent(', 'G4']
 
