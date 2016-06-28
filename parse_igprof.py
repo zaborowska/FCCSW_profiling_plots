@@ -3,7 +3,7 @@ import os
 import glob
 import sys
 import glob
-from ROOT import TGraphErrors, TFile
+from ROOT import TFile, TGraph
 from array import array
 
 inname = sys.argv[1]
@@ -55,24 +55,29 @@ for filename in glob.glob(filename_format):
                 result[method_name][1].append(float(percent))
                 #TODO: add total column as well?
 
-print(result)
-"""
-    #TODO:
-    # here create a graph and save to tfile
-    en_arr = array('f', en)
-    en_err_arr = array('f', [0]*len(en))
-    time_arr = array('f', time)
-    time_err_arr = array('f', time_err)
-    graph = TGraphErrors(len(en), en_arr, time_arr, en_err_arr,time_err_arr)
-    graphname = subdir.split('/')
-    print(graphname)
-    graph.SetTitle(graphname[len(graphname)-1])
-    graph.GetXaxis().SetTitle("energy (GeV)")
-    graph.GetYaxis().SetTitle("time/event (s)")
-    graph.SetMarkerColor(1)
-    graph.SetMarkerStyle(20)
-    graph.SetMarkerSize(1.5)
-    print(subdir+os.sep+'time.root')
-    file = TFile(subdir+os.sep+'time.root','RECREATE')
-    graph.Write()
-"""
+#print(result)
+paramname="energy (GeV)"
+accuracy = 1.e-1
+file = TFile(sys.argv[1]+'.root','RECREATE')
+i=0
+for name, x in result.items(): #iteritems():
+    if len(x[0]) != len(x[1]):
+        print("Lengths of x0 and x1 differ! Terminating.")
+        exit()
+    # check if sth is const
+    mean = sum(x[1])/len(x[1])
+    if not (all( abs(item - mean) < accuracy for item in x[1])):
+        x_arr = array('f', x[0])
+        y_arr = array('f', x[1])
+        graph = TGraph(len(x[0]), x_arr, y_arr)
+        graph.SetName("igprof_cumulative"+str(i))
+        graph.SetTitle(name)
+        i+=1
+        graph.GetXaxis().SetTitle(paramname)
+        graph.GetYaxis().SetTitle("%")
+        graph.SetMarkerColor(1)
+        graph.SetMarkerStyle(20)
+        graph.SetMarkerSize(1.5)
+        graph.Write()
+print("Created "+str(file.GetNkeys())+" graphs")
+file.Close()
