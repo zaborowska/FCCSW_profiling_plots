@@ -20,6 +20,8 @@ ig_cumulative_string = """------------------------------------------------------
 Flat profile (cumulative >= 1%)"""
 ig_flat_string = """----------------------------------------------------------------------
 Flat profile (self >= 0.01%)"""
+ig_end_string = """----------------------------------------------------------------------
+Call tree profile (cumulative)"""
 
 # loop over all files in directory
 for filename in glob.glob(filename_format):
@@ -35,7 +37,8 @@ for filename in glob.glob(filename_format):
             # get part between the 'cumulative' and 'flat' header
             cumulative_part = content.split(ig_cumulative_string)[1]
             cumulative_part = cumulative_part.split(ig_flat_string)[0]
-            all_lines = cumulative_part.split('\n')
+            self_part = content.split(ig_end_string)[0].split(ig_flat_string)[1]
+            all_lines = self_part.split('\n')
             relevant_lines = []
             for method in method_list:
                 for line in all_lines:
@@ -52,7 +55,7 @@ for filename in glob.glob(filename_format):
                 igprof_number = line_parts[-1]
                 # make sure the dict contains a nested list
                 result.setdefault(method_name, [[], []])[0].append(float(parameter))
-                result[method_name][1].append(float(percent))
+                result[method_name][1].append(float(total))
                 #TODO: add total column as well?
 
 #print(result)
