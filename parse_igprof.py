@@ -55,7 +55,7 @@ for filename in glob.glob(filename_format):
                 igprof_number = line_parts[-1]
                 # make sure the dict contains a nested list
                 result.setdefault(method_name, [[], []])[0].append(float(parameter))
-                result[method_name][1].append(float(total))
+                result[method_name][1].append(float(total.replace("'", "")))
                 #TODO: add total column as well?
 
 #print(result)
