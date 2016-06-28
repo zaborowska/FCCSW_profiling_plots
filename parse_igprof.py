@@ -10,7 +10,7 @@ inname = sys.argv[1]
 #TODO: move to config
 filename_format = 'data/igprof.'+inname+'.'+'*.txt'
 # substring just needs to be contained in line for it to match
-method_list = ['sim::RunManager::processEvent(', 'G4']
+method_list = ['DD4hep','G4']
 
 # create result dict
 result = {}
@@ -24,7 +24,8 @@ Flat profile (self >= 0.01%)"""
 # loop over all files in directory
 for filename in glob.glob(filename_format):
     print('Parsing file %s' % filename)
-    parameter = re.findall(r"[-+]?\d*\.\d+|\d+",filename)[0]
+    parameter = re.findall(r"[-+]?\d+\.\d*|\d+",filename)[1]
+    print(parameter)
     if not parameter:
         print('WARNING: omitting file: '+filepath)
     else:
@@ -44,8 +45,7 @@ for filename in glob.glob(filename_format):
                 """ p.ex. ['78.9', '28.23', 'G4EventManager::DoProcessing(G4Event*)', '[33]']
                 """
                 line_parts = line.split()
-                print(line_parts)
-                
+                #print(line_parts)
                 percent = line_parts[0]
                 total = line_parts[1],
                 method_name = ' '.join(line_parts[2:-1])
