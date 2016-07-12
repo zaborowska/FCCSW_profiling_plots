@@ -33,7 +33,7 @@ for title, graphsList in graphs.items():
         if(i==0):
             g.Draw("AP")
             g.GetYaxis().SetRangeUser(min(minval),max(maxval))
-            g.GetXaxis().SetRangeUser(0,200000)
+            g.GetXaxis().SetRangeUser(0,5000000)
         else:
             g.Draw("sameP")
     canv.cd(2)

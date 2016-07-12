@@ -10,10 +10,11 @@ inname = sys.argv[1]
 #TODO: move to config
 filename_format = 'data/igprof.'+inname+'.'+'*.txt'
 # substring just needs to be contained in line for it to match
-method_list = ['DD4hep','G4']
+method_list = ['DD4hep::Simulation','::ProcessHits']
 
 # create result dict
 result = {}
+threshold = 0
 
 # igprof strings
 ig_cumulative_string = """----------------------------------------------------------------------
@@ -48,15 +49,15 @@ for filename in glob.glob(filename_format):
                 """ p.ex. ['78.9', '28.23', 'G4EventManager::DoProcessing(G4Event*)', '[33]']
                 """
                 line_parts = line.split()
-                #print(line_parts)
                 percent = line_parts[0]
-                total = line_parts[1],
+                total = line_parts[1].replace("'", "")
                 method_name = ' '.join(line_parts[2:-1])
                 igprof_number = line_parts[-1]
-                # make sure the dict contains a nested list
-                result.setdefault(method_name, [[], []])[0].append(float(parameter))
-                result[method_name][1].append(float(total))
-                #TODO: add total column as well?
+                if float(total)>threshold:
+                    # make sure the dict contains a nested list
+                    result.setdefault(method_name, [[], []])[0].append(float(parameter))
+                    result[method_name][1].append(float(total))
+                    #TODO: add total column as well?
 
 #print(result)
 paramname="energy (GeV)"
@@ -77,7 +78,7 @@ for name, x in result.items(): #iteritems():
         graph.SetTitle(name)
         i+=1
         graph.GetXaxis().SetTitle(paramname)
-        graph.GetYaxis().SetTitle("%")
+        graph.GetYaxis().SetTitle("total")
         graph.SetMarkerColor(1)
         graph.SetMarkerStyle(20)
         graph.SetMarkerSize(1.5)
